@@ -40,4 +40,8 @@ All requests handles error if user does not exist.
 1. `type User` represents user who have id, name and picture.
 2. `type Forum` represents forum which have id, messages and users who joined forum.
 3. `type Message` represents message which have date when it's posted, user who posted it, message text.
-4. Unions was added to handle custom errors.
+4. `Unions` ware added to handle custom errors.
+
+## ADDITIONAL
+
+If you want to check mongo/mongoose database implementation, you can checkout to mongo branch and repeat start instuctions, ENJOY!
