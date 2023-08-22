@@ -1,23 +1,23 @@
 import { gql } from "apollo-server-express";
 
 export const rootSchema = gql(`
+    scalar ObjectID
+
     type User {
-        id: Int
+        _id: ObjectID
         name: String
         picture: String
     }
 
     type Message {
-        user: Int
-        date: String
-        name: String
-        picture: String
+        user: User
+        createdAt: String
         message: String!
     }
 
     type Forum {
-        id: Int
-        users: [Int]
+        _id: ObjectID
+        users: [ObjectID]
         messages: [Message]
     }
 
@@ -41,13 +41,13 @@ export const rootSchema = gql(`
 
     type RootQuery {
         getDatabase: Database!
-        listForums(user_id: Int): ListForumsResult!
+        listForums(user_id: String): ListForumsResult!
     }
 
     type RootMutation {
-        postMessage(user_id: Int!, forum_id: Int!, message: String!): PostMessageResult!
-        joinForum(user_id: Int!, forum_id: Int!): JoinForumResult!
-        createForum(user_id: Int!): CreateForumResult!
+        postMessage(user_id: String!, forum_id: String!, message: String!): PostMessageResult!
+        joinForum(user_id: String!, forum_id: String!): JoinForumResult!
+        createForum(user_id: String!): CreateForumResult!
     }
 
     schema {

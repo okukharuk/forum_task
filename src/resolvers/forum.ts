@@ -21,18 +21,18 @@ export type Forum = {
 export const forumResolver = {
   RootQuery: {
     getDatabase: () => getDatabase(),
-    listForums: (parent, args: { user_id?: number }) => {
+    listForums: (parent, args: { user_id?: string }) => {
       return listForums(args.user_id);
     },
   },
   RootMutation: {
-    postMessage: (parent, args: { user_id: number; forum_id: number; message: string }) => {
+    postMessage: (parent, args: { user_id: string; forum_id: string; message: string }) => {
       return postMessage(args.user_id, args.forum_id, args.message);
     },
-    createForum: (parent, args: { user_id: number }) => {
+    createForum: (parent, args: { user_id: string }) => {
       return createForum(args.user_id);
     },
-    joinForum: (parent, args: { user_id: number; forum_id: number }) => {
+    joinForum: (parent, args: { user_id: string; forum_id: string }) => {
       return joinForum(args.user_id, args.forum_id);
     },
   },

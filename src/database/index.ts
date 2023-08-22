@@ -1,68 +1,111 @@
-import fixtures from "../fixtures.json";
+import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
 
-const database = { ...fixtures };
+import { DB_CONN_STRING } from "../constants";
+import { Forum } from "../models/forum";
+import { User } from "../models/user";
 
-export const userExists = (user_id?: number) => {
-  return !user_id || database.users.some((user) => user.id === user_id) ? true : false;
+export const userExists = async (user_id?: string) => {
+  if (!user_id) return true;
+  const user = await User.findOne({ _id: new Object(user_id) }).lean();
+  return !!user;
 };
 
-export const listForums = (user_id?: number) => {
-  if (!userExists(user_id)) return { __typename: "Error", message: "User does not exists" };
+export const listForums = async (user_id?: string) => {
+  if (!(await userExists(user_id))) return { __typename: "Error", message: "User does not exists" };
 
-  const forums = user_id ? database.forums.filter((forum) => forum.users.includes(user_id)) : database.forums;
+  const forums = await Forum.aggregate([
+    ...(user_id ? [{ $match: { users: new ObjectId(user_id) } }] : []),
+    {
+      $project: {
+        _id: 1,
+        users: 1,
+        messages: {
+          $sortArray: {
+            input: "$messages",
+            sortBy: 1,
+          },
+        },
+      },
+    },
+    { $unwind: { path: "$messages", preserveNullAndEmptyArrays: true } },
+    {
+      $lookup: {
+        from: "users",
+        localField: "messages.user",
+        foreignField: "_id",
+        as: "messages.user",
+      },
+    },
+    { $unwind: { path: "$messages.user", preserveNullAndEmptyArrays: true } },
+    {
+      $group: {
+        _id: "$_id",
+        forum: { $first: "$$ROOT" },
+        messages: { $push: "$messages" },
+      },
+    },
+    {
+      $replaceRoot: {
+        newRoot: {
+          $mergeObjects: [
+            "$forum",
+            {
+              messages: {
+                $cond: {
+                  if: { $ne: [{ $arrayElemAt: ["$messages", 0] }, {}] },
+                  then: "$messages",
+                  else: [],
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
+  ]);
 
-  const sortedForums = forums.map((forum) => {
-    return {
-      ...forum,
-      messages: forum.messages
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .map((message) => {
-          const user = database.users.filter((user) => user.id === message.user)[0];
-          return { ...message, name: user.name, picture: user.picture };
-        }),
-    };
-  });
-
-  return { __typename: "Forums", forums: sortedForums };
+  return { __typename: "Forums", forums: forums };
 };
 
-export const joinForum = (user_id: number, forum_id: number) => {
-  if (!userExists(user_id)) return { __typename: "Error", message: "User does not exists" };
+export const joinForum = async (user_id: string, forum_id: string) => {
+  if (!(await userExists(user_id))) return { __typename: "Error", message: "User does not exists" };
+  const forum = await Forum.findOneAndUpdate(
+    { _id: forum_id },
+    { $addToSet: { users: new ObjectId(user_id) } },
+    { new: true }
+  )
+    .populate("messages.user")
+    .lean();
 
-  const forum_exists = database.forums.some((forum) => forum.id === forum_id);
-
-  if (forum_exists) {
-    const userJoined = database.forums.filter((forum) => forum.id === forum_id)[0].users.includes(user_id);
-    if (userJoined) return { __typename: "Error", message: "User already joined" };
-
-    database.forums = database.forums.map((forum) =>
-      forum.id === forum_id ? { ...forum, users: [...forum.users, user_id] } : forum
-    );
-
-    return { ...database.forums.filter((forum) => forum.id === forum_id)[0], __typename: "Forum" };
-  } else {
-    return { __typename: "Error", message: "Forum does not exists" };
-  }
+  return { ...forum, __typename: "Forum" };
 };
 
-export const createForum = (user_id: number) => {
-  if (!userExists(user_id)) return { __typename: "Error", message: "User does not exists" };
+export const createForum = async (user_id: string) => {
+  if (!(await userExists(user_id))) return { __typename: "Error", message: "User does not exists" };
 
-  const newForum = { id: database.forums.length + 1, users: [user_id], messages: [] };
-  database.forums.push(newForum);
+  const forum = await Forum.create({ users: [user_id] });
 
-  return { ...newForum, __typename: "Forum" };
+  return { ...forum, __typename: "Forum" };
 };
 
-export const postMessage = (user_id: number, forum_id: number, message: string) => {
-  if (!userExists(user_id)) return { __typename: "Error", message: "User does not exists" };
+export const postMessage = async (user_id: string, forum_id: string, message: string) => {
+  if (!(await userExists(user_id))) return { __typename: "Error", message: "User does not exists" };
 
-  const newMessage = { user: user_id, message: message, date: new Date().toISOString() };
-  database.forums = database.forums.map((forum) =>
-    forum.id === forum_id ? { ...forum, messages: [...forum.messages, newMessage] } : forum
-  );
+  await Forum.updateOne({ _id: forum_id }, { $push: { messages: { user: user_id, message: message } } }).lean();
 
-  return { ...newMessage, __typename: "Message" };
+  return { message: message, __typename: "Message" };
 };
 
-export const getDatabase = () => database;
+export const getDatabase = async () => {
+  const forums = await Forum.find({});
+  const users = await User.find({});
+
+  return { forums: forums, users: users };
+};
+
+export const connectToDatabase = async () => {
+  mongoose.connect(DB_CONN_STRING);
+};
+
+connectToDatabase();
