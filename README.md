@@ -24,7 +24,7 @@ All code is placed under `/src` folder
 **src/resolvers**: graphQL resolvers placed under this folder:
 
 1. Queries:
-   - getDatabase: retrieves whole database to detect changes.
+   - getDatabase: added it for handiness, retrieves whole database to detect changes.
    - listForums: lists all forums, if user_id specified retrieves only ones user joined.
 2. Mutations:
    - createForum: creates new forum, query should contain user_id argument.
@@ -44,4 +44,4 @@ All requests handles error if user does not exist.
 
 ## ADDITIONAL
 
-If you want to check mongo/mongoose database implementation, you can checkout to mongo branch and repeat start instuctions, ENJOY!
+If you want to check mongo/mongoose database implementation, you can clone repository and checkout to mongo branch and repeat start instuctions, ENJOY!
