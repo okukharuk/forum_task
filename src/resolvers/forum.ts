@@ -30,7 +30,6 @@ export const forumResolver = {
       return postMessage(args.user_id, args.forum_id, args.message);
     },
     createForum: (parent, args: { user_id: number }) => {
-      console.log(args);
       return createForum(args.user_id);
     },
     joinForum: (parent, args: { user_id: number; forum_id: number }) => {
