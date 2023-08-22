@@ -1,0 +1,68 @@
+{
+    "forums": [
+        {
+            "id": 1,
+            "users": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "messages": [
+                {
+                    "date": "2023-08-22T07:56:01Z",
+                    "user": 1,
+                    "message": "This actions happened to start practically from my birth"
+                },
+                {
+                    "date": "2023-08-22T07:58:01Z",
+                    "user": 4,
+                    "message": "What are you talking about?"
+                },
+                {
+                    "date": "2023-08-22T08:00:01Z",
+                    "user": 3,
+                    "message": "Ban"
+                },
+                {
+                    "date": "2023-08-22T08:02:01Z",
+                    "user": 4,
+                    "message": "Finally"
+                },
+                {
+                    "date": "2023-08-22T08:04:01Z",
+                    "user": 2,
+                    "message": "Victory"
+                }
+            ]
+        }
+    ],
+    "users": [
+        {
+            "id": 1,
+            "name": "Igor' Gofman",
+            "picture": "/uploads/1.png"
+        },
+        {
+            "id": 2,
+            "name": "Archont",
+            "picture": "/uploads/2.png"
+        },
+        {
+            "id": 3,
+            "name": "Imperator",
+            "picture": "/uploads/1.png"
+        },
+        {
+            "id": 4,
+            "name": "Eugene Dmytryich Metila",
+            "picture": "/uploads/4.png"
+        },
+        {
+            "id": 5,
+            "name": "Vania Bitcura",
+            "picture": "/uploads/5.png"
+        }
+    ]
+}
